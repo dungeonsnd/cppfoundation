@@ -1,0 +1,56 @@
+#ifndef _HEADER_FILE_CF_SIMPLE_QUEUE_HPP_
+#define _HEADER_FILE_CF_SIMPLE_QUEUE_HPP_
+
+/**
+*
+*  Queue < std::string > queue; // Using mutex as lock in multithreads accessing.
+*  Queue < std::string , FakeMutex> queue; // Don't using lock in singlethread accessing.
+*
+**/
+
+
+#include <queue>
+#include "cppfoundation/cf_lock"
+
+namespace cf
+{
+
+template < typename ElementType, typename LockType =Mutex >
+class Queue
+{
+public:
+    typedef LockGuard < LockType > T_Lock;
+
+    Queue()
+    {
+    }
+    ~Queue()
+    {
+    }
+    
+    // return queue size after get. return -1 when queue is empty.
+    int tryget(ElementType & e)
+    {
+        T_Lock lck;
+        std::queue < ElementType >::size_type s =_q.size();
+        if(s<1)
+            return -1;
+        e =_q.front();
+        _q.pop();
+        return s-1;
+    }
+    
+    void put(const ElementType & e)
+    {
+        T_Lock lck;
+        _q.push(e);
+    }
+private:
+    std::queue < ElementType > _q;    
+};
+
+
+};
+
+#endif // _HEADER_FILE_CF_SIMPLE_QUEUE_HPP_
+

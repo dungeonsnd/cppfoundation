@@ -1,0 +1,107 @@
+#ifndef _HEADER_FILE_CF_LOCK_HPP_
+#define _HEADER_FILE_CF_LOCK_HPP_
+
+/**
+*
+*  typedef cf::LockGuard < cf::FakeMutex > FLock;
+*  typedef cf::LockGuard < cf::Mutex > Lock;
+*
+*  cf::FLock lck; // This is a fake lock which never use mutex.
+*  cf::Lock lck; // This is a mutex lock.  
+*
+**/
+
+
+
+#ifdef WIN32
+#include <windows.h> 
+#else
+#include <pthread.h>
+#endif  
+
+namespace cf
+{
+
+class IMutex
+{ 
+public:
+    virtual ~IMutex() =0{}
+    virtual void Lock() =0;
+    virtual void Unlock() =0;
+};
+
+class FakeMutex : public IMutex
+{ 
+public: 
+    FakeMutex(){} 
+    ~FakeMutex(){}
+    void Lock(){}
+    void Unlock(){}
+};
+
+
+class Mutex : public IMutex
+{ 
+public: 
+    Mutex()
+    { 
+#ifdef WIN32
+        _m = ::CreateMutex(NULL, FALSE, NULL); 
+#else
+#endif  
+    } 
+    ~Mutex()
+    { 
+#ifdef WIN32
+        ::CloseHandle(_m); 
+#else
+#endif  
+    }  
+ 
+    void Lock()
+    { 
+#ifdef WIN32
+        DWORD d = WaitForSingleObject(_m, INFINITE); 
+#else
+#endif  
+    }  
+    void Unlock()
+    { 
+#ifdef WIN32
+        ::ReleaseMutex(_m); 
+#else
+#endif  
+    }    
+ 
+private: 
+#ifdef WIN32
+    HANDLE _m; 
+#else
+#endif  
+};
+
+
+template <typename T>
+class LockGuard
+{
+public: 
+    LockGuard()
+    { 
+        _m.Lock(); 
+    }  
+    ~LockGuard()
+    { 
+        _m.Unlock(); 
+    }  
+private: 
+    T _m;
+}; 
+
+
+typedef LockGuard < FakeMutex > FLock;
+typedef LockGuard < Mutex > Lock;
+
+};
+
+#endif // _HEADER_FILE_CF_LOCK_HPP_
+
