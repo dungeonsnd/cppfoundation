@@ -1,0 +1,38 @@
+#ifndef _HEADER_FILE_CF_CONV_HPP_
+#define _HEADER_FILE_CF_CONV_HPP_
+
+#ifdef WIN32
+#include <windows.h> 
+#else
+#endif  
+
+#ifdef WIN32
+int cf_conv_get_codepage(void)
+{
+	int nDestCodePage = GetACP();
+	switch (nDestCodePage)
+	{
+	case 936:
+		nDestCodePage = 936;
+		break;
+	case 950:
+		nDestCodePage = 950;
+		break;
+	default:
+		nDestCodePage = 936;
+	}
+	return nDestCodePage;
+}
+std::wstring cf_conv_utf8_to_utf16(std::string szSrc)
+{	
+	int nDestCodePage = cf_conv_get_codepage();
+	int nLength = MultiByteToWideChar(nDestCodePage,0,szSrc.c_str(),szSrc.length(),NULL,0);	
+	std::wstring strDst(nLength+1,0);
+	MultiByteToWideChar(nDestCodePage,0,szSrc.c_str(),szSrc.length(),(LPWSTR)(&strDst[0]),nLength);
+	return strDst;
+}
+#else
+#endif  
+
+#endif // _HEADER_FILE_CF_CONV_HPP_
+
