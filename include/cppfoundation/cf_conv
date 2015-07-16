@@ -3,34 +3,43 @@
 
 #ifdef WIN32
 #include <windows.h> 
-#else
-#endif  
 
-#ifdef WIN32
-int cf_conv_get_codepage(void)
+inline int cf_conv_get_codepage(void)
 {
-	int nDestCodePage = GetACP();
-	switch (nDestCodePage)
-	{
-	case 936:
-		nDestCodePage = 936;
-		break;
-	case 950:
-		nDestCodePage = 950;
-		break;
-	default:
-		nDestCodePage = 936;
-	}
-	return nDestCodePage;
+	int dstCodePage = GetACP();
+    if(936==dstCodePage || 950==dstCodePage) return dstCodePage;
+    else return 936;
 }
-std::wstring cf_conv_utf8_to_utf16(std::string szSrc)
+
+inline std::wstring cf_conv_utf8_to_unicode(const wstring & src)
 {	
-	int nDestCodePage = cf_conv_get_codepage();
-	int nLength = MultiByteToWideChar(nDestCodePage,0,szSrc.c_str(),szSrc.length(),NULL,0);	
-	std::wstring strDst(nLength+1,0);
-	MultiByteToWideChar(nDestCodePage,0,szSrc.c_str(),szSrc.length(),(LPWSTR)(&strDst[0]),nLength);
-	return strDst;
+	int dstCodePage = cf_conv_get_codepage();
+	int len = MultiByteToWideChar(dstCodePage,0,src.c_str(),src.size(),NULL,0);	
+	std::wstring szDst(len+1,0);
+	if(0==::MultiByteToWideChar(dstCodePage,0,src.c_str(),src.size(),&szDst[0],len))
+        szDst.resize(0); // Failed.
+	return szDst;
 }
+
+inline std::wstring cf_W2A(const wstring & src)
+{	
+	return cf_conv_utf8_to_unicode(src);
+}
+
+inline cf_conv_unicode_to_utf8(const wstring & src)
+{
+    int iTextLen = WideCharToMultiByte( CP_UTF8, 0, src.c_str(), -1, NULL, 0, NULL, NULL );
+    std::string szDst(iTextLen + 1, 0);
+    if(0==::WideCharToMultiByte( CP_UTF8, 0, src.c_str(), -1, &szDst[0], iTextLen, NULL, NULL ))
+        szDst.resize(0); // Failed.
+    return szDst;
+}
+
+inline std::wstring cf_A2W(const wstring & src)
+{	
+	return cf_conv_unicode_to_utf8(src);
+}
+
 #else
 #endif  
 
