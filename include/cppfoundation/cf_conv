@@ -11,7 +11,7 @@ inline int cf_conv_get_codepage(void)
     else return 936;
 }
 
-inline std::wstring cf_conv_utf8_to_unicode(const wstring & src)
+inline std::wstring cf_conv_utf8_to_unicode(const std::string & src)
 {	
 	int dstCodePage = cf_conv_get_codepage();
 	int len = MultiByteToWideChar(dstCodePage,0,src.c_str(),src.size(),NULL,0);	
@@ -21,12 +21,13 @@ inline std::wstring cf_conv_utf8_to_unicode(const wstring & src)
 	return szDst;
 }
 
-inline std::wstring cf_W2A(const wstring & src)
+inline std::wstring cf_A2W(const std::string & src)
 {	
 	return cf_conv_utf8_to_unicode(src);
 }
 
-inline cf_conv_unicode_to_utf8(const wstring & src)
+
+inline std::string cf_conv_unicode_to_utf8(const wstring & src)
 {
     int iTextLen = WideCharToMultiByte( CP_UTF8, 0, src.c_str(), -1, NULL, 0, NULL, NULL );
     std::string szDst(iTextLen + 1, 0);
@@ -35,7 +36,7 @@ inline cf_conv_unicode_to_utf8(const wstring & src)
     return szDst;
 }
 
-inline std::wstring cf_A2W(const wstring & src)
+inline std::string cf_W2A(const wstring & src)
 {	
 	return cf_conv_unicode_to_utf8(src);
 }
